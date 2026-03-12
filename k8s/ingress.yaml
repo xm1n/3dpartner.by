@@ -11,7 +11,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: 3dpartner.by
+    - host: test.3dpartner.by
       http:
         paths:
           - path: /

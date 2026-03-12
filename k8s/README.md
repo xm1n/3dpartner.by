@@ -25,7 +25,23 @@ kubectl get nodes   # должен быть один node в Ready
 
 Дальше ставите Ingress (k3s по умолчанию может уже включать Traefik; для nginx — см. [install nginx ingress](https://kubernetes.github.io/ingress-nginx/deploy/) для вашего окружения) и применяете манифесты: `kubectl apply -f k8s/`.
 
-### Вариант B: Уже есть кластер в другом месте
+### Вариант B: Локальная разработка с k3d
+
+[k3d](https://k3d.io/) поднимает k3s в Docker — удобно собирать и проверять проект локально. Быстрый старт:
+
+```bash
+# Установка k3d: https://k3d.io/#installation (brew install k3d / curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash)
+
+# Создать кластер (порты 80/443 на loadbalancer)
+k3d cluster create 3dpartner -p "80:80@loadbalancer" -p "443:443@loadbalancer"
+
+# После этого kubeconfig подхватится автоматически
+kubectl get nodes
+```
+
+Дальше: собрать образы, импортировать их в k3d, применить манифесты (см. раздел **[Сборка и деплой в k3d](#сборка-и-деплой-в-k3d)** ниже).
+
+### Вариант C: Уже есть кластер в другом месте
 
 Тогда на сервере `site` должен быть настроен доступ к нему:
 
@@ -65,6 +81,74 @@ docker push your-registry/3dpartner:latest
 В `k8s/app.yaml` замените `image: 3dpartner:latest` на `image: your-registry/3dpartner:latest`. Для приватного registry добавьте в Deployment `imagePullSecrets` (Secret типа `kubernetes.io/dockerconfigjson`).
 
 После правок: `kubectl apply -f k8s/app.yaml` и при необходимости `kubectl rollout restart deployment/app-3dpartner -n 3dpartner`.
+
+## Сборка и деплой в k3d
+
+Полный цикл: кластер → образы → секреты → манифесты → миграции → доступ.
+
+**1. Создать кластер (если ещё нет)**
+
+```bash
+k3d cluster create 3dpartner -p "80:80@loadbalancer" -p "443:443@loadbalancer"
+# или один скрипт на всё: chmod +x k8s/k3d-up.sh && ./k8s/k3d-up.sh
+```
+
+**2. Собрать образы и загрузить в кластер**
+
+k3d подхватывает образы из локального Docker — не нужен push в registry.
+
+```bash
+docker build -t 3dpartner:latest .
+docker build --target builder -t 3dpartner:migrate .
+
+k3d image import 3dpartner:latest -c 3dpartner
+k3d image import 3dpartner:migrate -c 3dpartner
+```
+
+**3. Секрет и манифесты**
+
+```bash
+cp k8s/secret.yaml.example k8s/secret.yaml
+# Отредактировать k8s/secret.yaml: DATABASE_URL (хост postgres), PAYLOAD_SECRET, S3_*, REDIS_URL
+
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml
+kubectl apply -f k8s/postgres.yaml
+kubectl apply -f k8s/redis.yaml
+kubectl apply -f k8s/minio.yaml
+```
+
+Дождаться готовности Postgres/MinIO: `kubectl get pods -n 3dpartner -w`.
+
+**4. Миграции и приложение**
+
+```bash
+kubectl apply -f k8s/migrate-job.yaml -n 3dpartner
+kubectl logs -f job/payload-migrate -n 3dpartner   # дождаться успешного завершения
+
+kubectl apply -f k8s/app.yaml -n 3dpartner
+kubectl apply -f k8s/ingress.yaml -n 3dpartner
+```
+
+В k3d по умолчанию стоит Traefik; в манифесте Ingress указан `ingressClassName: nginx`. Чтобы работал через Ingress, либо установите [nginx-ingress](https://kubernetes.github.io/ingress-nginx/deploy/) в кластер, либо временно замените в `k8s/ingress.yaml` класс на `traefik` или уберите строку `ingressClassName` (Traefik может взять Ingress без класса).
+
+**5. Доступ к приложению**
+
+- **Через port-forward (без Ingress):**  
+  `kubectl port-forward -n 3dpartner svc/app-3dpartner 3000:80`  
+  Открыть в браузере: http://localhost:3000
+
+- **Через Ingress:**  
+  Добавить в `/etc/hosts`: `127.0.0.1 3dpartner.by`  
+  Открыть: http://3dpartner.by (порт 80 уже проброшен в k3d).
+
+**Остановка и удаление кластера**
+
+```bash
+k3d cluster delete 3dpartner
+# или: ./k8s/k3d-down.sh
+```
 
 ## Порядок развёртывания
 
