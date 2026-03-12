@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: 3dpartner
+  name: app-3dpartner
   namespace: 3dpartner
   labels:
     app: 3dpartner
@@ -50,7 +50,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: 3dpartner
+  name: app-3dpartner
   namespace: 3dpartner
 spec:
   selector:
@@ -63,13 +63,13 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: 3dpartner-hpa
+  name: app-3dpartner-hpa
   namespace: 3dpartner
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: 3dpartner
+    name: app-3dpartner
   minReplicas: 2
   maxReplicas: 10
   metrics:

@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: 3dpartner-ingress
+  name: app-3dpartner-ingress
   namespace: 3dpartner
   annotations:
     # Для nginx-ingress (распространённый вариант)
@@ -18,11 +18,11 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: 3dpartner
+                name: app-3dpartner
                 port:
                   number: 80
   # Раскомментируйте для TLS
   # tls:
   #   - hosts:
   #       - 3dpartner.by
-  #     secretName: 3dpartner-tls
+  #     secretName: app-3dpartner-tls

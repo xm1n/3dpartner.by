@@ -8,6 +8,36 @@
 - Ingress Controller (например [nginx-ingress](https://kubernetes.github.io/ingress-nginx/deploy/))
 - Реестр образов (для продакшена: свой registry или Docker Hub)
 
+## Ошибка «connection refused» к localhost:8080
+
+Если при `kubectl apply -f k8s/` появляется ошибка **dial tcp 127.0.0.1:8080: connection refused**, значит на этой машине **нет подключения к кластеру**: либо кластер не установлен, либо не настроен kubeconfig.
+
+### Вариант A: Поднять кластер на сервере (k3s)
+
+На сервере, где планируете запускать приложение (например `root@site`), можно за минуту поднять одноподный кластер [k3s](https://k3s.io/):
+
+```bash
+curl -sfL https://get.k3s.io | sh
+# подождать ~30 сек, затем:
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+kubectl get nodes   # должен быть один node в Ready
+```
+
+Дальше ставите Ingress (k3s по умолчанию может уже включать Traefik; для nginx — см. [install nginx ingress](https://kubernetes.github.io/ingress-nginx/deploy/) для вашего окружения) и применяете манифесты: `kubectl apply -f k8s/`.
+
+### Вариант B: Уже есть кластер в другом месте
+
+Тогда на сервере `site` должен быть настроен доступ к нему:
+
+- Либо скопировать на `site` файл kubeconfig с машины, где уже есть доступ к кластеру:
+  ```bash
+  scp user@cluster-server:~/.kube/config ~/.kube/config
+  export KUBECONFIG=~/.kube/config
+  ```
+- Либо использовать облачный кластер (EKS, GKE, Yandex Cloud и т.д.) и установить их CLI + получить kubeconfig по инструкции провайдера.
+
+Проверка: `kubectl cluster-info` и `kubectl get nodes` должны выполняться без ошибок. После этого `kubectl apply -f k8s/` применит манифесты в кластер.
+
 ## Порядок развёртывания
 
 ### 1. Создать Secret из примера
@@ -55,6 +85,8 @@ kubectl apply -f k8s/ingress.yaml
 ```bash
 kubectl apply -f k8s/
 ```
+
+Флаг `--validate=false` отключает только проверку по OpenAPI; для `kubectl apply` всё равно нужен работающий кластер (см. раздел выше).
 
 ### 4. Бакет MinIO для медиа (S3)
 
