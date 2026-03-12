@@ -1,0 +1,80 @@
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { buildConfig } from 'payload'
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import sharp from 'sharp'
+
+import { Users } from '@/collections/system/Users'
+import { Media } from '@/collections/system/Media'
+import { Products } from '@/collections/shop/Products'
+import { Categories } from '@/collections/shop/Categories'
+import { Brands } from '@/collections/shop/Brands'
+import { Orders } from '@/collections/shop/Orders'
+import { Reviews } from '@/collections/shop/Reviews'
+import { PrintOrders } from '@/collections/production/PrintOrders'
+import { ProductionCards } from '@/collections/production/ProductionCards'
+import { Printers } from '@/collections/production/Printers'
+import { FarmMaterials } from '@/collections/production/FarmMaterials'
+import { EngineerProjects } from '@/collections/engineers/EngineerProjects'
+import { EngineerTasks } from '@/collections/engineers/EngineerTasks'
+import { B2BClients } from '@/collections/b2b/B2BClients'
+import { B2BPriceLists } from '@/collections/b2b/B2BPriceLists'
+import { Promotions } from '@/collections/marketing/Promotions'
+import { Banners } from '@/collections/marketing/Banners'
+import { Pages } from '@/collections/content/Pages'
+import { Articles } from '@/collections/content/Articles'
+import { SlicerProfiles } from '@/collections/content/SlicerProfiles'
+import { SiteSettings } from '@/globals/SiteSettings'
+import { Navigation } from '@/globals/Navigation'
+import { CalculatorSettings } from '@/globals/CalculatorSettings'
+
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
+
+export default buildConfig({
+  admin: {
+    user: Users.slug,
+    importMap: {
+      baseDir: path.resolve(dirname),
+    },
+    meta: {
+      titleSuffix: ' — 3D Partner Admin',
+    },
+    avatar: undefined,
+  },
+  editor: lexicalEditor(),
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URL || '',
+    },
+  }),
+  collections: [
+    Users,
+    Media,
+    Products,
+    Categories,
+    Brands,
+    Orders,
+    Reviews,
+    PrintOrders,
+    ProductionCards,
+    Printers,
+    FarmMaterials,
+    EngineerProjects,
+    EngineerTasks,
+    B2BClients,
+    B2BPriceLists,
+    Promotions,
+    Banners,
+    Pages,
+    Articles,
+    SlicerProfiles,
+  ],
+  globals: [SiteSettings, Navigation, CalculatorSettings],
+  secret: process.env.PAYLOAD_SECRET || '',
+  sharp,
+  typescript: {
+    outputFile: path.resolve(dirname, 'src/payload-types.ts'),
+  },
+})
