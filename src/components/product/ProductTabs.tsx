@@ -84,8 +84,8 @@ export function ProductTabs({ description, specs, downloadFiles = [], reviews = 
         {active === 'description' && (
           <>
             <div className="md:col-span-7 prose prose-slate max-w-none text-sm md:text-base leading-relaxed text-slate-600">
-              {description ? (
-                <RichText data={description} />
+              {description && typeof description === 'object' && 'root' in description ? (
+                <RichText data={description as React.ComponentProps<typeof RichText>['data']} />
               ) : (
                 <p className="text-slate-500">Описание товара пока не добавлено.</p>
               )}

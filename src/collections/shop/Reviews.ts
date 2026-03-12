@@ -29,12 +29,12 @@ export const Reviews: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [
-      async ({ data, payload }) => {
+      async ({ data, req }) => {
         if (data.authorName) return
         const authorId = data.author && (typeof data.author === 'object' && 'id' in data.author ? data.author.id : data.author)
         if (!authorId) return
         try {
-          const user = await payload.findByID({ collection: 'users', id: authorId })
+          const user = await req.payload.findByID({ collection: 'users', id: authorId })
           const u = user as { firstName?: string; lastName?: string }
           data.authorName = [u?.firstName, u?.lastName].filter(Boolean).join(' ').trim() || 'Покупатель'
         } catch {
