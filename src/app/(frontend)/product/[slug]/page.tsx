@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPayload } from '@/lib/payload'
+import type { Where } from 'payload'
 import { formatPrice } from '@/lib/formatPrice'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { ProductGallery } from '@/components/product/ProductGallery'
@@ -29,11 +30,10 @@ async function getProduct(slug: string) {
 async function getRelatedProducts(categoryIds: (string | number)[], catalogId: string | number | null, excludeId: string, limit: number) {
   if (categoryIds.length === 0 && !catalogId) return []
   const payload = await getPayload()
-  const where: Record<string, unknown> = { _status: { equals: 'published' }, id: { not_equals: excludeId } }
-  if (categoryIds.length > 0) {
-    where.categories = { in: categoryIds }
-  } else if (catalogId) {
-    where.catalog = { equals: catalogId }
+  const where: Where = {
+    _status: { equals: 'published' },
+    id: { not_equals: excludeId },
+    ...(categoryIds.length > 0 ? { categories: { in: categoryIds } } : catalogId != null ? { catalog: { equals: catalogId } } : {}),
   }
   const result = await payload.find({
     collection: 'products',
