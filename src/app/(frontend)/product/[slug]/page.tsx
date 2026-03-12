@@ -306,10 +306,13 @@ export default async function ProductPage({ params }: { params: Params }) {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {related.map((p: any) => {
-              const img = Array.isArray(p.images) ? (p.images[0]?.image ?? p.images[0]) : p.images?.[0]
+              const images = p.images
+              const firstImage = Array.isArray(images) ? images[0] : undefined
+              const img = firstImage != null ? (firstImage?.image ?? firstImage) : undefined
               const imageUrl = typeof img === 'object' && img?.url ? img.url : undefined
               const brandTitle = typeof p.brand === 'object' ? (p.brand?.name ?? p.brand?.title) : undefined
-              const catTitle = Array.isArray(p.categories) ? p.categories[0] : undefined
+              const categories = p.categories
+              const catTitle = Array.isArray(categories) ? categories[0] : undefined
               const catName = typeof catTitle === 'object' && catTitle?.title ? catTitle.title : undefined
               return (
                 <ProductCard
