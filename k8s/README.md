@@ -38,6 +38,34 @@ kubectl get nodes   # должен быть один node в Ready
 
 Проверка: `kubectl cluster-info` и `kubectl get nodes` должны выполняться без ошибок. После этого `kubectl apply -f k8s/` применит манифесты в кластер.
 
+## ErrImagePull / ImagePullBackOff
+
+Если поды приложения в состоянии **ErrImagePull** или **ImagePullBackOff**, кластер не может скачать образ `3dpartner:latest`: без имени registry он ищется на Docker Hub и там его нет. Нужно сделать образ доступным на **той же ноде**, где крутится k3s, либо положить его в registry.
+
+### Вариант A: Образ собран на той же машине, что и k3s
+
+k3s использует containerd, а не Docker. Локальный образ из `docker build` нужно импортировать в containerd:
+
+```bash
+# На сервере с k3s, после docker build -t 3dpartner:latest .
+docker save 3dpartner:latest | sudo k3s ctr images import -
+# Перезапустить поды, чтобы подхватили образ
+kubectl rollout restart deployment/app-3dpartner -n 3dpartner
+```
+
+### Вариант B: Образ в registry (Docker Hub, GHCR, свой)
+
+Соберите и запушьте образ, в манифестах укажите полное имя образа:
+
+```bash
+docker build -t your-registry/3dpartner:latest .
+docker push your-registry/3dpartner:latest
+```
+
+В `k8s/app.yaml` замените `image: 3dpartner:latest` на `image: your-registry/3dpartner:latest`. Для приватного registry добавьте в Deployment `imagePullSecrets` (Secret типа `kubernetes.io/dockerconfigjson`).
+
+После правок: `kubectl apply -f k8s/app.yaml` и при необходимости `kubectl rollout restart deployment/app-3dpartner -n 3dpartner`.
+
 ## Порядок развёртывания
 
 ### 1. Создать Secret из примера
@@ -108,6 +136,23 @@ kubectl get pods -n 3dpartner
 kubectl get svc -n 3dpartner
 kubectl get ingress -n 3dpartner
 ```
+
+## Ошибка 42P01 (relation does not exist)
+
+Если приложение падает с **code: '42P01'** (таблица не найдена), в БД ещё не применены миграции Payload. В конфиге включено **prodMigrations**: при первом старте приложение само выполняет миграции из `src/migrations`. Убедитесь, что:
+
+1. В образ попала папка `src/migrations` (она в репозитории и копируется при `COPY . .` в Dockerfile).
+2. Под приложения успешно стартует и получает `DATABASE_URL` из Secret — дайте поду 30–60 секунд на первый запуск (миграции выполняются при инициализации Payload).
+
+Если ошибка не исчезает, один раз примените миграции через Job:
+
+```bash
+kubectl apply -f k8s/migrate-job.yaml -n 3dpartner
+kubectl logs -f job/payload-migrate -n 3dpartner   # дождаться успешного завершения
+kubectl delete job payload-migrate -n 3dpartner     # опционально, Job удалится сам через 5 мин (ttlSecondsAfterFinished)
+```
+
+После успешного выполнения поды приложения перезапустите: `kubectl rollout restart deployment/app-3dpartner -n 3dpartner`.
 
 ## TLS
 

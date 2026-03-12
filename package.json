@@ -7,6 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "payload": "node --import ./scripts/register-loader.mjs ./node_modules/payload/bin.js --disable-transpile",
+    "migrate": "payload migrate",
+    "migrate:create": "payload migrate:create",
     "generate:types": "payload generate:types",
     "generate:importmap": "node --import ./scripts/register-loader.mjs ./node_modules/payload/bin.js --disable-transpile generate:importmap"
   },
