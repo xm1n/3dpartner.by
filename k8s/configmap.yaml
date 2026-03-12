@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 3dpartner-config
+  namespace: 3dpartner
+  labels:
+    app: 3dpartner
+data:
+  # Публичный URL сайта (для ссылок в письмах, canonical и т.д.)
+  NEXT_PUBLIC_SITE_URL: "https://3dpartner.by"
+  # S3 / MinIO — медиатека Payload (загрузки в коллекцию media)
+  S3_ENDPOINT: "http://minio:9000"
+  S3_BUCKET: "3dpartner"
+  S3_REGION: "us-east-1"

@@ -39,3 +39,6 @@ Thumbs.db
 
 # Docker data
 docker-data/
+
+# Kubernetes secrets (не коммитить)
+k8s/secret.yaml

@@ -127,6 +127,10 @@ export default async function ProductPage({ params }: { params: Params }) {
     text: r.text,
     createdAt: r.createdAt,
   }))
+  const reviewsCount = reviewsList.length
+  const averageRating = reviewsCount > 0
+    ? reviewsList.reduce((sum, r) => sum + Number(r.rating), 0) / reviewsCount
+    : null
 
   return (
     <main className="container mx-auto px-4 py-6 max-w-[1400px]">
@@ -200,7 +204,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                   <path d="M12 2v10.5m-9-5l9 5m9-5l-9 5" stroke="#0f172a" strokeWidth={1.5} />
                 </svg>
                 <span className="text-[11px] font-black text-slate-900 group-hover:text-blue-600 uppercase tracking-widest transition">
-                  {brand.title}
+                  {brand.name ?? brand.title}
                 </span>
               </Link>
             ) : (
@@ -213,7 +217,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                 </svg>
               </button>
               <FavoriteButton
-                product={{ id: productId, title: product.title, slug: product.slug, price: product.price, imageUrl, brand: brand?.title }}
+                product={{ id: productId, title: product.title, slug: product.slug, price: product.price, imageUrl, brand: brand?.name ?? brand?.title }}
                 className="!w-8 !h-8 text-slate-400 hover:text-red-500"
               />
               <span className="w-px h-3 bg-slate-200 mx-0.5" />
@@ -229,10 +233,16 @@ export default async function ProductPage({ params }: { params: Params }) {
 
           <div className="flex items-center gap-3 mb-4 text-xs">
             <div className="flex items-center text-slate-900 font-bold gap-1">
-              <span className="text-yellow-400 text-sm">★</span> —
+              <span className="text-yellow-400 text-sm">★</span> {averageRating != null ? averageRating.toFixed(1) : '—'}
             </div>
             <span className="text-slate-200">|</span>
-            <span className="text-slate-500">Отзывы скоро</span>
+            {reviewsCount > 0 ? (
+              <a href="#reviews" className="text-slate-500 hover:text-slate-900 transition">
+                {reviewsCount} {reviewsCount === 1 ? 'отзыв' : reviewsCount < 5 ? 'отзыва' : 'отзывов'}
+              </a>
+            ) : (
+              <span className="text-slate-500">Отзывы скоро</span>
+            )}
           </div>
 
           {variants.length > 0 && variants.some((v: any) => v.colorHex) && (
@@ -298,7 +308,7 @@ export default async function ProductPage({ params }: { params: Params }) {
             {related.map((p: any) => {
               const img = Array.isArray(p.images)?.[0]?.image ?? p.images?.[0]
               const imageUrl = typeof img === 'object' && img?.url ? img.url : undefined
-              const brandTitle = typeof p.brand === 'object' && p.brand?.title ? p.brand.title : undefined
+              const brandTitle = typeof p.brand === 'object' ? (p.brand?.name ?? p.brand?.title) : undefined
               const catTitle = Array.isArray(p.categories)?.[0]
               const catName = typeof catTitle === 'object' && catTitle?.title ? catTitle.title : undefined
               return (

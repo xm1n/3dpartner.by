@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+node_modules
+.next
+.turbo
+*.log
+.DS_Store
+k8s
+*.md
+.cursor

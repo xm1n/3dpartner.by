@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url'
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import sharp from 'sharp'
 
 import { Users } from '@/collections/system/Users'
@@ -35,7 +36,28 @@ import { CalculatorSettings } from '@/globals/CalculatorSettings'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const s3Endpoint = process.env.S3_ENDPOINT
+
 export default buildConfig({
+  plugins: [
+    s3Storage({
+      collections: {
+        media: true,
+      },
+      bucket: process.env.S3_BUCKET || '3dpartner',
+      config: {
+        credentials: {
+          accessKeyId: process.env.S3_ACCESS_KEY || '',
+          secretAccessKey: process.env.S3_SECRET_KEY || '',
+        },
+        region: process.env.S3_REGION || 'us-east-1',
+        ...(s3Endpoint && {
+          endpoint: s3Endpoint,
+          forcePathStyle: true,
+        }),
+      },
+    }),
+  ],
   admin: {
     user: Users.slug,
     importMap: {

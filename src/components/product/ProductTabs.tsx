@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { ReviewForm } from './ReviewForm'
 
@@ -33,6 +33,11 @@ function formatReviewDate(createdAt: string) {
 export function ProductTabs({ description, specs, downloadFiles = [], reviews = [], productId, productPath }: Props) {
   const [active, setActive] = useState<TabId>('description')
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.location.hash === '#reviews') setActive('reviews')
+  }, [])
+
   const files = downloadFiles.filter(
     (item): item is DownloadFile & { file: { url?: string; filename?: string } } =>
       item?.file != null && typeof item.file === 'object' && 'url' in item.file
@@ -55,7 +60,7 @@ export function ProductTabs({ description, specs, downloadFiles = [], reviews = 
   ]
 
   return (
-    <div className="pt-6 border-t border-slate-200">
+    <div id="reviews" className="pt-6 border-t border-slate-200">
       <div className="flex overflow-x-auto border-b border-slate-200 no-scrollbar gap-6 md:gap-8">
         {tabs.map((tab) => (
           <button

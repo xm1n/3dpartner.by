@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: 3dpartner-ingress
+  namespace: 3dpartner
+  annotations:
+    # Для nginx-ingress (распространённый вариант)
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: 3dpartner.by
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: 3dpartner
+                port:
+                  number: 80
+  # Раскомментируйте для TLS
+  # tls:
+  #   - hosts:
+  #       - 3dpartner.by
+  #     secretName: 3dpartner-tls
