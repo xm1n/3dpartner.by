@@ -4,6 +4,9 @@ import { Footer } from '@/components/layout/Footer'
 import { Providers } from '@/providers'
 import '@/styles/globals.css'
 
+// Payload (Header/Footer) needs DB; avoid prerender at build when DB is unavailable
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: {
     default: '3D Partner — Экосистема 3D-печати',

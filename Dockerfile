@@ -15,8 +15,6 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-# Payload needs PAYLOAD_SECRET to init; placeholder at build, real value at runtime
-ENV PAYLOAD_SECRET=build-time-placeholder-minimum-32-characters-long
 RUN pnpm build
 
 # Production image
