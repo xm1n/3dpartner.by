@@ -1,19 +1,33 @@
 import Link from 'next/link'
-import { ArrowRight, Lightbulb, Boxes } from 'lucide-react'
+import { ArrowRight, Lightbulb, Boxes, Check, ChevronRight } from 'lucide-react'
 import { ProductCard } from '@/components/catalog/ProductCard'
+import { getPayload } from '@/lib/payload'
 
-const mockProducts = [
-  { title: 'Филамент PETG eSUN 1кг 1.75мм', slug: 'esun-petg-1kg', brand: 'eSUN', category: 'Филамент', price: 55.0, inStock: true, stockQuantity: 120, badges: ['bestseller'] as string[], colors: [{ hex: '#000' }, { hex: '#fff' }, { hex: '#dc2626' }, { hex: '#1eb4e6' }] },
-  { title: 'Филамент Bambu PLA Basic 1кг (с катушкой)', slug: 'bambu-pla-basic', brand: 'Bambu Lab', category: 'Филамент', price: 95.0, inStock: true, badges: ['new'] as string[], colors: [{ hex: '#22c55e' }, { hex: '#f97316' }] },
-  { title: 'Хотэнд в сборе (Закалённая сталь) для X1/P1', slug: 'hotend-x1-p1', brand: 'Комплектующие', price: 135.0, inStock: true },
-]
+async function getPopularProducts() {
+  const payload = await getPayload()
+  const { docs } = await payload.find({
+    collection: 'products',
+    limit: 3,
+    sort: '-createdAt',
+    where: { _status: { equals: 'published' } },
+    depth: 1,
+  })
+  return docs
+}
 
-export default function HomePage() {
+export default async function HomePage() {
+  const products = await getPopularProducts()
+
   return (
     <main className="container mx-auto px-4 py-8 max-w-[1400px] space-y-10">
       {/* Hero */}
       <section className="grid grid-cols-1 md:grid-cols-12 gap-4 md:h-[400px]">
         <Link href="/catalog" className="md:col-span-8 rounded-lg overflow-hidden relative group hover-card cursor-pointer bg-slate-900 flex">
+          <img
+            src="https://images.unsplash.com/photo-1631541909061-71e34a62c69b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+            alt="Индустриальная 3D-печать"
+            className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+          />
           <div className="absolute inset-0 hero-overlay z-10" />
           <div className="relative z-20 p-8 md:p-12 flex flex-col justify-center h-full">
             <span className="bg-blue-600 text-white text-[10px] font-bold uppercase tracking-widest py-1 px-2.5 rounded-sm mb-4 inline-block w-max shadow-sm">
@@ -66,12 +80,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Popular products */}
+      {/* Products from Payload CMS */}
       <section>
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-6 border-b border-slate-200 pb-3 gap-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Популярные расходники</h2>
-            <p className="text-sm text-slate-500 mt-1">Материалы всегда в наличии на нашем складе</p>
+            <p className="text-sm text-slate-500 mt-1">
+              {products.length > 0 ? 'Материалы всегда в наличии на нашем складе' : 'Скоро здесь появятся товары'}
+            </p>
           </div>
           <Link href="/catalog" className="text-xs font-bold text-slate-600 hover:text-slate-900 border border-slate-300 hover:border-slate-500 px-4 py-2 rounded transition">
             Весь каталог
@@ -79,9 +95,31 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {mockProducts.map((product) => (
-            <ProductCard key={product.slug} {...product} />
-          ))}
+          {products.map((product: any) => {
+            const brand = typeof product.brand === 'object' ? product.brand?.title : undefined
+            const firstImage = product.images?.[0]?.image
+            const imageUrl = typeof firstImage === 'object' ? firstImage?.url : undefined
+            const colors = product.variants
+              ?.filter((v: any) => v.colorHex)
+              .map((v: any) => ({ hex: v.colorHex }))
+
+            return (
+              <ProductCard
+                key={product.id}
+                title={product.title}
+                slug={product.slug}
+                brand={brand}
+                price={product.price}
+                oldPrice={product.oldPrice ?? undefined}
+                imageUrl={imageUrl}
+                inStock={product.inStock}
+                stockQuantity={product.stockQuantity ?? undefined}
+                badges={product.badges ?? undefined}
+                colors={colors?.length > 0 ? colors : undefined}
+              />
+            )
+          })}
+
           <Link href="/catalog" className="bg-slate-50 rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center hover:bg-white hover:border-slate-400 hover:shadow-sm transition cursor-pointer p-6 text-center group min-h-[280px]">
             <div className="w-12 h-12 bg-white border border-slate-200 rounded-full flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform text-slate-500">
               <ArrowRight className="w-6 h-6" />
@@ -102,6 +140,11 @@ export default function HomePage() {
             <p className="text-slate-600 mb-8 text-sm leading-relaxed max-w-sm">
               Интегрированный портал для инженеров. Загрузите ваш чертёж в защищённый сейф. Мы напечатаем опытный образец и выставим на продажу.
             </p>
+            <ul className="space-y-3 mb-8 text-xs font-medium text-slate-700">
+              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-purple-500 shrink-0" /> Защита интеллектуальной собственности</li>
+              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-purple-500 shrink-0" /> Прозрачный биллинг и статистика продаж</li>
+              <li className="flex items-center gap-2"><Check className="w-4 h-4 text-purple-500 shrink-0" /> Автоматическое начисление роялти</li>
+            </ul>
             <div className="mt-auto">
               <Link href="/engineers/portal" className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded font-bold transition flex items-center gap-2 text-sm w-max shadow-sm">
                 Войти в кабинет автора <ArrowRight className="w-4 h-4" />
@@ -118,6 +161,11 @@ export default function HomePage() {
             <p className="text-slate-300 mb-8 text-sm leading-relaxed max-w-sm">
               Регистрируйтесь как юридическое лицо и получите доступ к индивидуальным скидочным колонкам, ЭДО и API-токенам для интеграции.
             </p>
+            <ul className="space-y-3 mb-8 text-xs font-medium text-slate-300">
+              <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-blue-400 shrink-0" /> Генерация XML/YML фидов с вашими ценами</li>
+              <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-blue-400 shrink-0" /> Скачивание счетов и накладных в 1 клик</li>
+              <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-blue-400 shrink-0" /> Приоритетная очередь на 3D-печать серий</li>
+            </ul>
             <div className="mt-auto">
               <Link href="/b2b" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded font-bold transition flex items-center gap-2 text-sm w-max shadow-sm">
                 Стать оптовым партнёром <ArrowRight className="w-4 h-4" />

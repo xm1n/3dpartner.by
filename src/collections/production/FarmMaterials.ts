@@ -3,6 +3,7 @@ import { isAdminOrManager } from '@/access/roles'
 
 export const FarmMaterials: CollectionConfig = {
   slug: 'farm-materials',
+  labels: { singular: 'Материал', plural: 'Материалы (склад)' },
   admin: {
     useAsTitle: 'label',
     group: 'Производство',

@@ -3,9 +3,10 @@ import { isAdminOrManager, isLoggedIn } from '@/access/roles'
 
 export const EngineerTasks: CollectionConfig = {
   slug: 'engineer-tasks',
+  labels: { singular: 'Задача', plural: 'Задачи на разработку' },
   admin: {
     useAsTitle: 'title',
-    group: 'Инженеры',
+    group: 'Биржа Инженеров',
     defaultColumns: ['title', 'status', 'client', 'budget', 'createdAt'],
   },
   access: {

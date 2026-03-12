@@ -3,6 +3,7 @@ import { isAdminOrManager } from '@/access/roles'
 
 export const Printers: CollectionConfig = {
   slug: 'printers',
+  labels: { singular: 'Принтер', plural: 'Принтеры' },
   admin: {
     useAsTitle: 'name',
     group: 'Производство',

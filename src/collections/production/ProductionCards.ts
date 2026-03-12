@@ -3,6 +3,7 @@ import { isAdminOrManager } from '@/access/roles'
 
 export const ProductionCards: CollectionConfig = {
   slug: 'production-cards',
+  labels: { singular: 'Тех. карта', plural: 'Тех. карты' },
   admin: {
     useAsTitle: 'title',
     group: 'Производство',

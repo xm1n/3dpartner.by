@@ -3,6 +3,7 @@ import { isAdminOrManager, isAdminOrPublished } from '@/access/roles'
 
 export const Articles: CollectionConfig = {
   slug: 'articles',
+  labels: { singular: 'Статья', plural: 'Статьи' },
   admin: {
     useAsTitle: 'title',
     group: 'Контент',

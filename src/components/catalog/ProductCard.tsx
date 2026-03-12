@@ -1,7 +1,9 @@
 import Link from 'next/link'
-import { Heart, ShoppingCart } from 'lucide-react'
+import { AddToCartButton } from '@/components/ui/AddToCartButton'
+import { FavoriteButton } from '@/components/ui/FavoriteButton'
 
 interface ProductCardProps {
+  id?: string
   title: string
   slug: string
   brand?: string
@@ -23,8 +25,10 @@ const badgeLabels: Record<string, { label: string; className: string }> = {
 }
 
 export function ProductCard({
-  title, slug, brand, category, price, oldPrice, imageUrl, inStock = true, stockQuantity, badges, colors,
+  id, title, slug, brand, category, price, oldPrice, imageUrl, inStock = true, stockQuantity, badges, colors,
 }: ProductCardProps) {
+  const productId = id || slug
+
   return (
     <div className="bg-white rounded-lg border border-slate-200 overflow-hidden flex flex-col hover-card group relative">
       {badges && badges.length > 0 && (
@@ -40,9 +44,10 @@ export function ProductCard({
         </div>
       )}
 
-      <button className="absolute top-2 right-2 z-10 w-7 h-7 bg-white/90 backdrop-blur rounded flex items-center justify-center text-slate-400 hover:text-red-500 border border-slate-100 shadow-sm transition">
-        <Heart className="w-4 h-4" />
-      </button>
+      <FavoriteButton
+        product={{ id: productId, title, slug, price, imageUrl, brand }}
+        className="absolute top-2 right-2 z-10"
+      />
 
       <Link href={`/product/${slug}`} className="relative h-48 bg-white flex items-center justify-center border-b border-slate-100 overflow-hidden">
         {imageUrl ? (
@@ -90,10 +95,9 @@ export function ProductCard({
               )}
             </div>
           </div>
-          <button className="bg-white text-slate-800 hover:bg-slate-50 transition px-4 py-2 rounded text-xs font-bold border border-slate-300 shadow-sm flex items-center gap-1.5">
-            <ShoppingCart className="w-3.5 h-3.5" />
-            В корзину
-          </button>
+          <AddToCartButton
+            product={{ id: productId, title, slug, price, imageUrl, brand }}
+          />
         </div>
       </div>
     </div>

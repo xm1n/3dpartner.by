@@ -3,10 +3,12 @@ import { anyone, isAdminOrManager, isAdminOrPublished } from '@/access/roles'
 
 export const Products: CollectionConfig = {
   slug: 'products',
+  labels: { singular: 'Товар', plural: 'Товары' },
   admin: {
     useAsTitle: 'title',
     group: 'Магазин',
     defaultColumns: ['title', 'sku', 'price', 'brand', 'inStock', '_status'],
+    description: 'Каталог товаров интернет-магазина',
   },
   versions: { drafts: true },
   access: {
@@ -26,6 +28,13 @@ export const Products: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     { name: 'sku', type: 'text', label: 'Артикул', admin: { position: 'sidebar' } },
+    {
+      name: 'catalog',
+      type: 'relationship',
+      relationTo: 'catalogs',
+      label: 'Каталог',
+      admin: { position: 'sidebar', description: 'Основной раздел магазина' },
+    },
     {
       name: 'brand',
       type: 'relationship',
@@ -104,6 +113,16 @@ export const Products: CollectionConfig = {
               label: 'Изображения',
               fields: [
                 { name: 'image', type: 'upload', relationTo: 'media', required: true },
+              ],
+            },
+            {
+              name: 'downloadFiles',
+              type: 'array',
+              label: 'Профили для слайсера и другие файлы',
+              admin: { description: 'Файлы для скачивания: профили Cura, Bambu Studio, STL, 3MF и т.д.' },
+              fields: [
+                { name: 'label', type: 'text', label: 'Название', required: true, admin: { description: 'Например: Cura 5.x, Bambu Studio, STL модель' } },
+                { name: 'file', type: 'upload', relationTo: 'media', required: true, label: 'Файл' },
               ],
             },
           ],

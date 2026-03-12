@@ -3,14 +3,16 @@ import { isAdmin, isAdminOrSelf, isAdminFieldLevel } from '@/access/roles'
 
 export const Users: CollectionConfig = {
   slug: 'users',
+  labels: { singular: 'Пользователь', plural: 'Пользователи' },
   auth: true,
   admin: {
     useAsTitle: 'email',
     group: 'Система',
     defaultColumns: ['email', 'firstName', 'role', 'createdAt'],
+    description: 'Пользователи системы: админы, менеджеры, клиенты, инженеры',
   },
   access: {
-    create: isAdmin,
+    create: () => true,
     read: isAdminOrSelf,
     update: isAdminOrSelf,
     delete: isAdmin,

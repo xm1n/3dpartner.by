@@ -1,15 +1,27 @@
 import type { CollectionConfig } from 'payload'
-import { isB2B, isAdminOrManager } from '@/access/roles'
+import crypto from 'node:crypto'
+import { isAdminOrManager } from '@/access/roles'
+
+/** Админ/менеджер — все; B2B-клиент — только своя запись (где user = текущий пользователь) */
+const readB2BClients: import('payload').Access = (args) => {
+  const user = args.req.user as { id?: string | number; role?: string } | null | undefined
+  if (user?.role === 'admin' || user?.role === 'manager') return true
+  if (user?.role === 'b2b_customer' && user?.id != null) {
+    return { user: { equals: user.id } } as import('payload').Where
+  }
+  return false
+}
 
 export const B2BClients: CollectionConfig = {
   slug: 'b2b-clients',
+  labels: { singular: 'B2B клиент', plural: 'B2B клиенты' },
   admin: {
     useAsTitle: 'companyName',
-    group: 'Клиенты и B2B',
+    group: 'B2B / Опт',
     defaultColumns: ['companyName', 'inn', 'discountColumn', 'user', 'createdAt'],
   },
   access: {
-    read: isB2B,
+    read: readB2BClients,
     create: isAdminOrManager,
     update: isAdminOrManager,
     delete: isAdminOrManager,
@@ -39,5 +51,14 @@ export const B2BClients: CollectionConfig = {
     { name: 'apiToken', type: 'text', label: 'API-токен для прайс-листа', admin: { readOnly: true, description: 'Генерируется автоматически' } },
     { name: 'notes', type: 'textarea', label: 'Заметки менеджера' },
   ],
+  hooks: {
+    beforeChange: [
+      ({ data }) => {
+        if (!data?.apiToken || typeof data.apiToken !== 'string' || data.apiToken.trim() === '') {
+          data.apiToken = crypto.randomBytes(32).toString('hex')
+        }
+      },
+    ],
+  },
   timestamps: true,
 }

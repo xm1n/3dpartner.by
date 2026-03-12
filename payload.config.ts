@@ -7,6 +7,8 @@ import sharp from 'sharp'
 
 import { Users } from '@/collections/system/Users'
 import { Media } from '@/collections/system/Media'
+import { CallbackRequests } from '@/collections/system/CallbackRequests'
+import { Catalogs } from '@/collections/shop/Catalogs'
 import { Products } from '@/collections/shop/Products'
 import { Categories } from '@/collections/shop/Categories'
 import { Brands } from '@/collections/shop/Brands'
@@ -20,6 +22,7 @@ import { EngineerProjects } from '@/collections/engineers/EngineerProjects'
 import { EngineerTasks } from '@/collections/engineers/EngineerTasks'
 import { B2BClients } from '@/collections/b2b/B2BClients'
 import { B2BPriceLists } from '@/collections/b2b/B2BPriceLists'
+import { B2BApplications } from '@/collections/b2b/B2BApplications'
 import { Promotions } from '@/collections/marketing/Promotions'
 import { Banners } from '@/collections/marketing/Banners'
 import { Pages } from '@/collections/content/Pages'
@@ -41,7 +44,7 @@ export default buildConfig({
     meta: {
       titleSuffix: ' — 3D Partner Admin',
     },
-    avatar: undefined,
+    avatar: 'default',
   },
   editor: lexicalEditor(),
   db: postgresAdapter({
@@ -50,28 +53,38 @@ export default buildConfig({
     },
   }),
   collections: [
-    Users,
-    Media,
+    // Магазин
+    Catalogs,
     Products,
     Categories,
     Brands,
     Orders,
     Reviews,
+    // Производство
     PrintOrders,
     ProductionCards,
     Printers,
     FarmMaterials,
+    // Биржа Инженеров
     EngineerProjects,
     EngineerTasks,
+    // B2B / Опт
     B2BClients,
     B2BPriceLists,
+    B2BApplications,
+    // Маркетинг
     Promotions,
     Banners,
+    // Контент
     Pages,
     Articles,
     SlicerProfiles,
+    // Система
+    Users,
+    Media,
+    CallbackRequests,
   ],
-  globals: [SiteSettings, Navigation, CalculatorSettings],
+  globals: [SiteSettings, CalculatorSettings, Navigation],
   secret: process.env.PAYLOAD_SECRET || '',
   sharp,
   typescript: {

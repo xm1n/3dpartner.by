@@ -3,6 +3,7 @@ import { anyone, isAdminOrManager } from '@/access/roles'
 
 export const SlicerProfiles: CollectionConfig = {
   slug: 'slicer-profiles',
+  labels: { singular: 'Профиль слайсера', plural: 'Профили слайсеров' },
   admin: {
     useAsTitle: 'title',
     group: 'Контент',

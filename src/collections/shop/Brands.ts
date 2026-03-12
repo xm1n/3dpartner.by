@@ -3,6 +3,7 @@ import { anyone, isAdminOrManager } from '@/access/roles'
 
 export const Brands: CollectionConfig = {
   slug: 'brands',
+  labels: { singular: 'Бренд', plural: 'Бренды' },
   admin: {
     useAsTitle: 'name',
     group: 'Магазин',

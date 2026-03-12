@@ -3,6 +3,7 @@ import { isAdminOrManager } from '@/access/roles'
 
 export const Promotions: CollectionConfig = {
   slug: 'promotions',
+  labels: { singular: 'Акция', plural: 'Акции и промокоды' },
   admin: {
     useAsTitle: 'name',
     group: 'Маркетинг',

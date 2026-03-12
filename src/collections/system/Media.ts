@@ -1,8 +1,9 @@
 import type { CollectionConfig } from 'payload'
-import { anyone, isAdminOrManager } from '@/access/roles'
+import { anyone, isAdminOrManager, isEngineer } from '@/access/roles'
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  labels: { singular: 'Файл', plural: 'Медиатека' },
   upload: {
     mimeTypes: [
       'image/png',
@@ -29,10 +30,21 @@ export const Media: CollectionConfig = {
   admin: {
     useAsTitle: 'alt',
     group: 'Система',
+    description: 'Изображения, документы, 3D-модели',
+  },
+  hooks: {
+    beforeChange: [
+      ({ data }) => {
+        if (!(data as any).alt && (data as any).filename) {
+          (data as any).alt = (data as any).filename
+        }
+        return data
+      },
+    ],
   },
   access: {
     read: anyone,
-    create: isAdminOrManager,
+    create: (args) => isAdminOrManager(args) || isEngineer(args),
     update: isAdminOrManager,
     delete: isAdminOrManager,
   },
@@ -41,7 +53,7 @@ export const Media: CollectionConfig = {
       name: 'alt',
       type: 'text',
       label: 'Alt текст',
-      required: true,
+      admin: { description: 'Подставляется из имени файла, если не указан' },
     },
   ],
 }

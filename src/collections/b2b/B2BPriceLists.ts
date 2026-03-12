@@ -3,9 +3,11 @@ import { isAdminOrManager } from '@/access/roles'
 
 export const B2BPriceLists: CollectionConfig = {
   slug: 'b2b-pricelists',
+  labels: { singular: 'Прайс-лист', plural: 'Прайс-листы' },
   admin: {
     useAsTitle: 'name',
-    group: 'Клиенты и B2B',
+    group: 'B2B / Опт',
+    description: 'Конфигурации выгрузки прайс-листов для оптовых клиентов',
   },
   access: {
     read: isAdminOrManager,

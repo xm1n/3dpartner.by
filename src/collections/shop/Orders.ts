@@ -3,6 +3,7 @@ import { isAdmin, isAdminOrManager } from '@/access/roles'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
+  labels: { singular: 'Заказ', plural: 'Заказы' },
   admin: {
     useAsTitle: 'orderNumber',
     group: 'Магазин',
@@ -38,6 +39,17 @@ export const Orders: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     { name: 'customer', type: 'relationship', relationTo: 'users', label: 'Клиент' },
+    {
+      name: 'contactInfo',
+      type: 'group',
+      label: 'Контактные данные',
+      fields: [
+        { name: 'firstName', type: 'text', label: 'Имя' },
+        { name: 'lastName', type: 'text', label: 'Фамилия' },
+        { name: 'email', type: 'email', label: 'E-mail' },
+        { name: 'phone', type: 'text', label: 'Телефон' },
+      ],
+    },
     {
       name: 'items',
       type: 'array',

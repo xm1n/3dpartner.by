@@ -3,6 +3,7 @@ import { anyone, isAdminOrManager, isAdminOrPublished } from '@/access/roles'
 
 export const Pages: CollectionConfig = {
   slug: 'pages',
+  labels: { singular: 'Страница', plural: 'Страницы' },
   admin: {
     useAsTitle: 'title',
     group: 'Контент',

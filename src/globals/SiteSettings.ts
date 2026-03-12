@@ -41,6 +41,19 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
     {
+      name: 'managers',
+      type: 'array',
+      label: 'Менеджеры (карточка контактов)',
+      admin: { description: 'Отображаются во всплывающей карточке при наведении на телефон в шапке' },
+      fields: [
+        { name: 'name', type: 'text', label: 'Имя и фамилия', required: true },
+        { name: 'department', type: 'text', label: 'Отдел / специализация', required: true },
+        { name: 'phone', type: 'text', label: 'Прямой телефон' },
+        { name: 'photo', type: 'upload', relationTo: 'media', label: 'Фото' },
+        { name: 'isOnline', type: 'checkbox', label: 'Сейчас онлайн', defaultValue: false },
+      ],
+    },
+    {
       name: 'legal',
       type: 'group',
       label: 'Юридическая информация',
