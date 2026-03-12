@@ -83,16 +83,17 @@ cp k8s/secret.yaml.example k8s/secret.yaml
 - `S3_ACCESS_KEY`, `S3_SECRET_KEY` — учётные данные MinIO
 - `REDIS_URL` — `redis://redis:6379`
 
-### 2. Собрать образ приложения
+### 2. Собрать образы приложения и миграций
 
 ```bash
+# Образ для запуска приложения (production)
 docker build -t 3dpartner:latest .
-# Для своего registry:
-# docker tag 3dpartner:latest your-registry/3dpartner:latest
-# docker push your-registry/3dpartner:latest
+
+# Образ для Job миграций (нужен только если будете запускать k8s/migrate-job.yaml)
+docker build --target builder -t 3dpartner:migrate .
 ```
 
-В манифестах при необходимости замените `image: 3dpartner:latest` на образ из вашего registry.
+Для своего registry добавьте теги и push для обоих образов. В манифестах при необходимости замените `image: 3dpartner:latest` и в `migrate-job.yaml` — `image: 3dpartner:migrate` на образы из registry.
 
 ### 3. Применить манифесты
 
@@ -144,12 +145,19 @@ kubectl get ingress -n 3dpartner
 1. В образ попала папка `src/migrations` (она в репозитории и копируется при `COPY . .` в Dockerfile).
 2. Под приложения успешно стартует и получает `DATABASE_URL` из Secret — дайте поду 30–60 секунд на первый запуск (миграции выполняются при инициализации Payload).
 
-Если ошибка не исчезает, один раз примените миграции через Job:
+Если ошибка не исчезает, один раз примените миграции через Job. Сначала соберите образ миграций (стадия builder, в нём есть pnpm и payload CLI):
+
+```bash
+docker build --target builder -t 3dpartner:migrate .
+docker save 3dpartner:migrate | sudo k3s ctr images import -   # если используете k3s на той же машине
+```
+
+Затем запустите Job:
 
 ```bash
 kubectl apply -f k8s/migrate-job.yaml -n 3dpartner
 kubectl logs -f job/payload-migrate -n 3dpartner   # дождаться успешного завершения
-kubectl delete job payload-migrate -n 3dpartner     # опционально, Job удалится сам через 5 мин (ttlSecondsAfterFinished)
+kubectl delete job payload-migrate -n 3dpartner  # опционально, Job удалится сам через 5 мин (ttlSecondsAfterFinished)
 ```
 
 После успешного выполнения поды приложения перезапустите: `kubectl rollout restart deployment/app-3dpartner -n 3dpartner`.

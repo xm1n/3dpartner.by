@@ -1,6 +1,10 @@
 # Одноразовый Job: применить миграции Payload к БД.
 # Использовать при ошибке 42P01 (relation does not exist).
 #
+# Образ 3dpartner:migrate должен быть собран из стадии builder (в нём есть pnpm и payload CLI):
+#   docker build --target builder -t 3dpartner:migrate .
+# Затем импортировать в k3s: docker save 3dpartner:migrate | sudo k3s ctr images import -
+#
 # Запуск:
 #   kubectl apply -f k8s/migrate-job.yaml -n 3dpartner
 # Проверить статус:
@@ -22,9 +26,16 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: 3dpartner:latest
+          image: 3dpartner:migrate
           imagePullPolicy: IfNotPresent
-          command: ["pnpm", "payload", "migrate"]
+          workingDir: /app
+          command:
+            - node
+            - --import
+            - ./scripts/register-loader.mjs
+            - ./node_modules/payload/bin.js
+            - --disable-transpile
+            - migrate
           envFrom:
             - configMapRef:
                 name: 3dpartner-config
