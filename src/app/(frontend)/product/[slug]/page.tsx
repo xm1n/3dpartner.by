@@ -335,30 +335,3 @@ export default async function ProductPage({ params }: { params: Params }) {
     </main>
   )
 }
-
-function ColorPicker({ variants }: { variants: { variantName?: string; colorHex?: string }[] }) {
-  const withColor = variants.filter((v) => v.colorHex)
-  if (withColor.length === 0) return null
-
-  return (
-    <div className="mb-5">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-[11px] font-bold text-slate-900">Цвет</span>
-        <span className="text-[11px] text-slate-500" id="selected-color-name">
-          {withColor[0]?.variantName || withColor[0]?.colorHex || '—'}
-        </span>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {withColor.map((v, i) => (
-          <button
-            key={i}
-            type="button"
-            className="color-btn w-7 h-7 rounded-full border border-slate-200 transition hover:scale-110 focus:outline-none outline-2 outline-transparent outline-offset-2 first:outline-slate-900 first:border-slate-900"
-            style={{ backgroundColor: v.colorHex || '#ccc' }}
-            title={v.variantName || v.colorHex}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
